@@ -574,18 +574,7 @@
         saveToStorage();
         showListTab(currentModalTab);
         renderTopCard();
-      }
-    }
-
-    function resetWords() {
-      if (confirm("確定要將詞庫重置回預設狀態嗎？")) {
-        allWords = [...DEFAULT_WORDS];
-        studyQueue = allWords.filter(w => !w.mastered);
-        saveToStorage();
-        renderTopCard();
-      }
-    }
-
+      
     // 初始化啟動
     lucide.createIcons();
     updateCounters();

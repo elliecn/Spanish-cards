@@ -372,14 +372,36 @@
       }, 250);
     }
 
-    // 發音功能
+       // 發音：強制篩選出系統內建的純正西班牙語聲線
     function speakText(e, text) {
       if (e) e.stopPropagation();
+      
+      // 先停止前一個發音，避免重疊
+      window.speechSynthesis.cancel();
+
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'es-ES';
-      utterance.rate = 0.9;
+      utterance.lang = 'es-ES'; // 設定標準西班牙語 (西班牙)
+      utterance.rate = 0.85;    // 語速稍慢更清晰
+
+      // 從裝置的所有語音庫中，找出最道地的西語聲線 (例如 iOS 內建的 Jorge, Monica, Paulina 等)
+      const voices = window.speechSynthesis.getVoices();
+      const spanishVoice = voices.find(v => v.lang === 'es-ES') || 
+                           voices.find(v => v.lang.startsWith('es'));
+
+      if (spanishVoice) {
+        utterance.voice = spanishVoice;
+      }
+
       window.speechSynthesis.speak(utterance);
     }
+
+    // 預加載語音列表（解決 iOS Safari 第一次點擊抓不到語音的問題）
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
 
     function speakCurrent(e) {
       if (studyQueue.length > 0) {

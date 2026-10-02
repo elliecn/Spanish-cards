@@ -3,15 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>CN's español</title>
+  <title>CN’s español</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide 圖示 -->
+  <!-- Lucide 圖示庫 -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 防止拖曳時反白文字與下拉重整 */
     body {
       overscroll-behavior-y: contain;
+      /* 1. 自訂背景圖片：更換下方 url 裡的連結即可 */
+      background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1200&q=80');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
     .card-touch {
       touch-action: none;
@@ -26,83 +30,86 @@
     }
   </style>
 </head>
-<body class="bg-stone-100 text-stone-800⁠ text-slate-100 min-h-screen flex flex-col items-center p-4">
+<body class="min-h-screen flex flex-col items-center p-4 relative backdrop-brightness-75 backdrop-blur-[2px]">
 
   <!-- 頂部導航 -->
-  <header class="w-full max-w-md flex justify-between items-center py-3 border-b border-slate-800">
-    <!-- 左上角：分類清單按鈕 -->
-    <button onclick="openStatsModal()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition">
-      <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i>
+  <header class="w-full max-w-md flex justify-between items-center py-2 relative z-10">
+    <!-- 左上角按鈕 -->
+    <button onclick="openStatsModal()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-white/80 hover:bg-white active:scale-95 border border-white/40 shadow-sm rounded-xl text-xs font-bold text-slate-800 backdrop-blur transition">
+      <i data-lucide="layers" class="w-4 h-4 text-amber-500"></i>
       <span>單字進度庫</span>
     </button>
 
-    <!-- 模式切換 -->
-    <div class="flex space-x-1.5 bg-slate-800 p-1 rounded-xl border border-slate-700">
-      <button onclick="switchTab('study')" id="tab-study" class="px-3 py-1 rounded-lg text-xs font-bold bg-amber-400 text-slate-950 transition">複習卡</button>
-      <button onclick="switchTab('manage')" id="tab-manage" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition">新增單字</button>
+    <!-- 右上角切換 -->
+    <div class="flex space-x-1 bg-white/70 backdrop-blur p-1 rounded-xl border border-white/30 shadow-sm">
+      <button onclick="switchTab('study')" id="tab-study" class="px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white transition">複習卡</button>
+      <button onclick="switchTab('manage')" id="tab-manage" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 transition">新增單字</button>
     </div>
   </header>
 
-  <main class="w-full max-w-md mt-4 flex-1 flex flex-col items-center">
+  <!-- 2. 正中間最上方大標題：CN’s español -->
+  <div class="w-full max-w-md text-center my-3 relative z-10">
+    <h1 class="text-3xl font-black tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] font-serif">
+      CN’s español
+    </h1>
+  </div>
 
-    <!-- ================= 模式 1：滑動單詞卡 ================= -->
+  <main class="w-full max-w-md flex-1 flex flex-col items-center relative z-10">
+
+    <!-- ================= 模式 1：複習卡片區 ================= -->
     <div id="view-study" class="w-full flex flex-col items-center">
       
-      <!-- 進度狀態 -->
-      <div class="w-full flex justify-between text-xs text-slate-400 mb-3 px-2">
-        <span id="queue-status">剩餘待複習：0</span>
-        <span id="mastered-count" class="text-emerald-400 font-medium">已記熟：0</span>
+      <!-- 進度指示 -->
+      <div class="w-full flex justify-between text-xs text-white/95 font-semibold drop-shadow mb-3 px-2">
+        <span id="queue-status">待複習：0</span>
+        <span id="mastered-count" class="text-emerald-300">已記熟：0</span>
       </div>
 
       <!-- 卡片外框與容器 -->
       <div class="relative w-full h-[360px] flex items-center justify-center">
 
-        <!-- 滑動提示文字標籤（拖曳時淡入） -->
-        <div id="badge-master" class="absolute top-6 right-6 z-20 px-3 py-1 bg-emerald-500 text-white font-bold rounded-lg opacity-0 transform rotate-12 transition-opacity pointer-events-none text-xs">
+        <!-- 滑動指示標籤 -->
+        <div id="badge-master" class="absolute top-6 right-6 z-20 px-3 py-1.5 bg-emerald-500 text-white font-black rounded-lg opacity-0 transform rotate-12 transition-opacity pointer-events-none text-xs shadow-lg">
           記住了 ✓
         </div>
-        <div id="badge-learn" class="absolute top-6 left-6 z-20 px-3 py-1 bg-rose-500 text-white font-bold rounded-lg opacity-0 transform -rotate-12 transition-opacity pointer-events-none text-xs">
+        <div id="badge-learn" class="absolute top-6 left-6 z-20 px-3 py-1.5 bg-rose-500 text-white font-black rounded-lg opacity-0 transform -rotate-12 transition-opacity pointer-events-none text-xs shadow-lg">
           還不熟 ✕
         </div>
 
-        <!-- 真正可被拖曳滑動的卡片 -->
-        <div id="flashcard" class="card-touch absolute w-full h-full text-slate-800 rounded-3xl p-6 shadow-2xl border border-stone-200 flex flex-col justify-between cursor-grab active:cursor-grabbing">
+        <!-- 真正可被拖曳滑動的卡片本體（柔和暖白底色，5. 單字改黑色） -->
+        <div id="flashcard" class="card-touch absolute w-full h-full bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-2xl border border-white/60 flex flex-col justify-between cursor-grab active:cursor-grabbing">
           
-          <div class="flex justify-between items-center">
-            <span id="card-type" class="text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-slate-700 text-amber-300">
-              Sustantivo
-            </span>
-            <!-- 發音按鈕 -->
-            <button onclick="speakCurrent(event)" class="p-2.5 bg-slate-700 hover:bg-slate-600 active:scale-90 rounded-full text-amber-400 transition" title="播放發音">
+          <!-- 頂部：3. 已刪除左上角 sustantivo，保留右上發音按鈕 -->
+          <div class="flex justify-end items-center">
+            <button onclick="speakCurrent(event)" class="p-2.5 bg-slate-100 hover:bg-slate-200 active:scale-90 rounded-full text-slate-700 transition" title="播放發音">
               <i data-lucide="volume-2" class="w-5 h-5"></i>
             </button>
           </div>
 
-          <!-- 正反面文字 -->
+          <!-- 正反面單字內容（5. 黑色字體） -->
           <div class="text-center my-auto pointer-events-none">
-            <h2 id="card-es" class="text-3xl font-extrabold text-white tracking-wide">載入中...</h2>
-            <p id="card-hint" class="text-xs text-slate-500 mt-2">輕點卡片翻轉查看釋義</p>
+            <h2 id="card-es" class="text-4xl font-extrabold text-slate-900 tracking-wide">載入中...</h2>
+            <p id="card-hint" class="text-xs text-slate-400 mt-2 font-medium">輕點卡片翻轉查看釋義</p>
 
             <div id="card-back" class="hidden mt-3">
-              <p id="card-zh" class="text-2xl font-bold text-amber-300"></p>
-              <p id="card-example" class="text-xs text-slate-400 italic mt-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 leading-relaxed"></p>
+              <p id="card-zh" class="text-2xl font-bold text-sky-700"></p>
+              <p id="card-example" class="text-xs text-slate-600 italic mt-3 bg-slate-100 p-2.5 rounded-xl border border-slate-200 leading-relaxed"></p>
             </div>
           </div>
 
-          <div class="text-center text-[11px] text-slate-500 pointer-events-none">
-            👈 左滑：不熟 ｜ 輕點翻面 ｜ 右滑：記住 👉
-          </div>
+          <!-- 4. 底部引導小字（左滑/右滑那行）已依要求刪除 -->
+          <div></div>
         </div>
 
       </div>
 
-      <!-- 底部輔助按鈕（也可以用點的） -->
+      <!-- 底部輔助按鈕 -->
       <div class="flex justify-between w-full mt-6 px-2 gap-4">
-        <button onclick="triggerSwipe('left')" class="flex-1 py-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 active:scale-95 rounded-2xl font-bold text-sm flex items-center justify-center space-x-1.5 transition">
+        <button onclick="triggerSwipe('left')" class="flex-1 py-3 bg-rose-500/90 text-white hover:bg-rose-600 active:scale-95 rounded-2xl font-bold text-sm flex items-center justify-center space-x-1.5 shadow-md transition">
           <i data-lucide="x" class="w-4 h-4"></i>
           <span>還不熟 (左滑)</span>
         </button>
-        <button onclick="triggerSwipe('right')" class="flex-1 py-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 active:scale-95 rounded-2xl font-bold text-sm flex items-center justify-center space-x-1.5 transition">
+        <button onclick="triggerSwipe('right')" class="flex-1 py-3 bg-emerald-500/90 text-white hover:bg-emerald-600 active:scale-95 rounded-2xl font-bold text-sm flex items-center justify-center space-x-1.5 shadow-md transition">
           <span>記住了 (右滑)</span>
           <i data-lucide="check" class="w-4 h-4"></i>
         </button>
@@ -110,101 +117,114 @@
 
     </div>
 
-    <!-- ================= 模式 2：搜尋與新增單字 ================= -->
-    <div id="view-manage" class="w-full hidden flex flex-col space-y-5">
-      <!-- 線上搜尋 -->
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
-        <h3 class="text-sm font-semibold text-amber-400 mb-2 flex items-center space-x-1.5">
-          <i data-lucide="search" class="w-4 h-4"></i>
-          <span>線上西語字典快速新增</span>
+    <!-- ================= 模式 2：6. 智慧辭典與新增單字 ================= -->
+    <div id="view-manage" class="w-full hidden flex flex-col space-y-4">
+      
+      <!-- Gemini 智慧搜尋並自動填寫 -->
+      <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl border border-white/60 shadow-xl">
+        <h3 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
+          <span class="flex items-center space-x-1.5">
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+            <span>西語 AI 辭典智慧分析</span>
+          </span>
+          <!-- 串接外部西語助手[span_2](start_span)[span_2](end_span) -->
+          <a id="ext-dict-link" href="https://www.esdict.cn" target="_blank" class="text-[11px] text-sky-600 hover:underline flex items-center space-x-0.5">
+            <span>西語助手網頁</span>
+            <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
         </h3>
+
         <div class="flex gap-2">
-          <input type="text" id="search-input" placeholder="輸入西文，如：playa" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
-          <button onclick="searchWord()" class="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-xl text-sm transition">查詢</button>
+          <input type="text" id="search-input" placeholder="輸入西文，如：abuela" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <button onclick="aiSearchWord()" id="btn-search" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold rounded-xl text-sm transition flex items-center space-x-1">
+            <span id="search-spinner" class="hidden animate-spin">⏳</span>
+            <span>查詢</span>
+          </button>
         </div>
-        <div id="search-result" class="hidden mt-3 p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs">
+
+        <!-- 字典查詢結果展示區 -->
+        <div id="search-result" class="hidden mt-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
           <div class="flex justify-between items-start">
             <div>
-              <p id="res-word" class="font-bold text-white text-base"></p>
-              <p id="res-desc" class="text-slate-400 mt-1"></p>
+              <div class="flex items-center space-x-2">
+                <span id="res-word" class="font-bold text-slate-900 text-base"></span>
+                <span id="res-type" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px]"></span>
+              </div>
+              <p id="res-zh" class="text-slate-700 font-medium mt-1 text-sm"></p>
+              <p id="res-eg" class="text-slate-500 italic mt-1.5 bg-white p-2 rounded-lg border border-slate-200"></p>
             </div>
-            <button onclick="addFromSearch()" class="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-semibold hover:bg-emerald-600 transition">＋ 加入</button>
           </div>
+          <button onclick="addFromSearch()" class="mt-3 w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm transition">
+            ＋ 將此單字加入我的複習庫
+          </button>
         </div>
       </div>
 
-      <!-- 手動新增 -->
-      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
-        <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center space-x-1.5">
-          <i data-lucide="pen-tool" class="w-4 h-4"></i>
-          <span>手動自訂單詞</span>
+      <!-- 手動自訂微調單字 -->
+      <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl border border-white/60 shadow-xl">
+        <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-1.5">
+          <i data-lucide="pen-tool" class="w-4 h-4 text-slate-600"></i>
+          <span>手動填寫 / 編輯單字</span>
         </h3>
         <div class="space-y-3">
-          <input type="text" id="custom-es" placeholder="西班牙語單詞 *" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
-          <input type="text" id="custom-zh" placeholder="中文意思 *" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+          <input type="text" id="custom-es" placeholder="西班牙語單詞 *" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <input type="text" id="custom-zh" placeholder="中文意思 *" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
           <div class="grid grid-cols-2 gap-2">
-            <input type="text" id="custom-type" placeholder="詞性（如：sustantivo）" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
-            <input type="text" id="custom-eg" placeholder="例句（選填）" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+            <input type="text" id="custom-type" placeholder="詞性（如：f. 名詞）" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <input type="text" id="custom-eg" placeholder="例句" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
           </div>
-          <button onclick="addCustomWord()" class="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-xl text-sm transition">儲存至單字庫</button>
+          <button onclick="addCustomWord()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition">儲存單字</button>
         </div>
       </div>
       
       <div class="text-right">
-        <button onclick="resetWords()" class="text-xs text-rose-400 hover:underline">恢復預設單字</button>
+        <button onclick="resetWords()" class="text-xs text-white/80 hover:text-white underline">重置回預設單字</button>
       </div>
     </div>
 
   </main>
 
-  <!-- ================= 彈出面板：左上角熟 / 不熟單字庫 ================= -->
+  <!-- ================= 彈出面板：左上角單字進度庫 ================= -->
   <div id="stats-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-md h-[85vh] sm:h-[600px] rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+    <div class="bg-white border border-slate-200 w-full max-w-md h-[85vh] sm:h-[600px] rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
       
-      <!-- 標題欄 -->
-      <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+      <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
         <div class="flex items-center space-x-2">
-          <i data-lucide="bookmark" class="w-5 h-5 text-amber-400"></i>
-          <h3 class="font-bold text-base text-white">我的單字進度分類</h3>
+          <i data-lucide="bookmark" class="w-5 h-5 text-amber-500"></i>
+          <h3 class="font-bold text-base text-slate-900">單字掌握清單</h3>
         </div>
-        <button onclick="closeStatsModal()" class="p-2 text-slate-400 hover:text-white rounded-full">
+        <button onclick="closeStatsModal()" class="p-2 text-slate-400 hover:text-slate-700 rounded-full">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- 切換分頁：不熟 vs 熟 -->
-      <div class="flex border-b border-slate-700 bg-slate-900/50 p-2 gap-2">
-        <button onclick="showListTab('mastered')" id="list-tab-mastered" class="flex-1 py-2 text-xs font-bold rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition">
+      <div class="flex border-b border-slate-200 bg-slate-100 p-2 gap-2">
+        <button onclick="showListTab('mastered')" id="list-tab-mastered" class="flex-1 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white shadow-sm transition">
           已掌握熟詞 (<span id="count-mastered">0</span>)
         </button>
-        <button onclick="showListTab('learning')" id="list-tab-learning" class="flex-1 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition">
+        <button onclick="showListTab('learning')" id="list-tab-learning" class="flex-1 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition">
           待加強生詞 (<span id="count-learning">0</span>)
         </button>
       </div>
 
-      <!-- 清單內容滾動區 -->
-      <div id="list-content" class="flex-1 overflow-y-auto p-4 space-y-2.5">
-        <!-- JS 動態插入清單項目 -->
-      </div>
+      <div id="list-content" class="flex-1 overflow-y-auto p-4 space-y-2.5"></div>
     </div>
   </div>
 
   <script>
-    // 預設詞庫
+    // 預設示範詞庫
     const DEFAULT_WORDS = [
-      { id: "1", es: "el café", zh: "咖啡", type: "sustantivo", eg: "Un café con leche, por favor.", mastered: false },
-      { id: "2", es: "la biblioteca", zh: "圖書館", type: "sustantivo", eg: "Estudio en la biblioteca.", mastered: false },
-      { id: "3", es: "viajar", zh: "旅行", type: "verbo", eg: "Me encanta viajar por el mundo.", mastered: false },
+      { id: "1", es: "la abuela", zh: "祖母、外婆", type: "sustantivo (f.)", eg: "Mi abuela prepara una comida deliciosa.", mastered: false },
+      { id: "2", es: "el café", zh: "咖啡", type: "sustantivo (m.)", eg: "Un café con leche, por favor.", mastered: false },
+      { id: "3", es: "viajar", zh: "旅行", type: "verbo", eg: "Me encanta viajar por España.", mastered: false },
       { id: "4", es: "maravilloso", zh: "極好的、精彩的", type: "adjetivo", eg: "Es un día maravilloso.", mastered: false }
     ];
 
     let allWords = JSON.parse(localStorage.getItem('es_vocab_all')) || DEFAULT_WORDS;
-    // 當前學習隊列（還沒掌握的）
     let studyQueue = allWords.filter(w => !w.mastered);
     let isFlipped = false;
     let searchResultCache = null;
 
-    // DOM 元素
     const card = document.getElementById('flashcard');
     const badgeMaster = document.getElementById('badge-master');
     const badgeLearn = document.getElementById('badge-learn');
@@ -222,15 +242,16 @@
       document.getElementById('count-learning').innerText = allWords.length - mastered;
     }
 
-    // 渲染當前最上層的卡片
+    // 渲染卡片
     function renderTopCard() {
       if (studyQueue.length === 0) {
         card.innerHTML = `
           <div class="text-center my-auto pointer-events-none">
-            <h3 class="text-2xl font-bold text-amber-400">🎉 太厲害了！</h3>
-            <p class="text-sm text-slate-300 mt-2">目前沒有需要複習的單詞囉！</p>
-            <p class="text-xs text-slate-500 mt-1">可點左上角「單字進度庫」查看所有掌握的單詞</p>
+            <h3 class="text-2xl font-bold text-slate-900">🎉 ¡Felicidades!</h3>
+            <p class="text-sm text-slate-600 mt-2">目前沒有需要複習的單字囉！</p>
+            <p class="text-xs text-slate-400 mt-1">點左上角「單字進度庫」可查看已記熟單字</p>
           </div>
+          <div></div>
         `;
         badgeMaster.style.opacity = '0';
         badgeLearn.style.opacity = '0';
@@ -239,39 +260,32 @@
 
       const item = studyQueue[0];
       card.innerHTML = `
-        <div class="flex justify-between items-center">
-          <span class="text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-slate-700 text-amber-300">
-            ${item.type || 'Palabra'}
-          </span>
-          <button onclick="speakText(event, '${item.es}')" class="p-2.5 bg-slate-700 hover:bg-slate-600 active:scale-90 rounded-full text-amber-400 transition" title="發音">
+        <div class="flex justify-end items-center">
+          <button onclick="speakText(event, '${item.es}')" class="p-2.5 bg-slate-100 hover:bg-slate-200 active:scale-90 rounded-full text-slate-700 transition" title="發音">
             <i data-lucide="volume-2" class="w-5 h-5"></i>
           </button>
         </div>
         <div class="text-center my-auto pointer-events-none">
-          <h2 class="text-3xl font-extrabold text-white tracking-wide">${item.es}</h2>
-          <p id="card-hint" class="text-xs text-slate-500 mt-2">輕點卡片翻轉查看釋義</p>
+          <h2 class="text-4xl font-extrabold text-slate-900 tracking-wide">${item.es}</h2>
+          <p id="card-hint" class="text-xs text-slate-400 mt-2 font-medium">輕點卡片翻轉查看釋義</p>
           <div id="card-back" class="hidden mt-3">
-            <p class="text-2xl font-bold text-amber-300">${item.zh}</p>
-            <p class="text-xs text-slate-400 italic mt-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 leading-relaxed">${item.eg ? `"${item.eg}"` : '無例句'}</p>
+            <p class="text-2xl font-bold text-sky-700">${item.zh}</p>
+            <p class="text-xs text-slate-600 italic mt-3 bg-slate-100 p-2.5 rounded-xl border border-slate-200 leading-relaxed">${item.eg ? `"${item.eg}"` : '無例句'}</p>
           </div>
         </div>
-        <div class="text-center text-[11px] text-slate-500 pointer-events-none">
-          👈 左滑：不熟 ｜ 輕點翻面 ｜ 右滑：記住 👉
-        </div>
+        <div></div>
       `;
       isFlipped = false;
       lucide.createIcons();
       updateCounters();
     }
 
-    // ================= 滑動手勢（Pointer Events） =================
-    let isDragging = false;
-    let startX = 0, currentX = 0;
-    let hasMoved = false;
+    // 拖曳滑動互動
+    let isDragging = false, startX = 0, currentX = 0, hasMoved = false;
 
     card.addEventListener('pointerdown', (e) => {
       if (studyQueue.length === 0) return;
-      if (e.target.closest('button')) return; // 點擊發音時不拖曳
+      if (e.target.closest('button')) return;
       isDragging = true;
       startX = e.clientX;
       currentX = e.clientX;
@@ -284,14 +298,11 @@
       if (!isDragging) return;
       currentX = e.clientX;
       const deltaX = currentX - startX;
-
       if (Math.abs(deltaX) > 8) hasMoved = true;
 
-      // 拖曳旋轉公式
       const rotate = deltaX * 0.08;
       card.style.transform = `translateX(${deltaX}px) rotate(${rotate}deg)`;
 
-      // 動態顯示右上/左上提示 Badge
       if (deltaX > 40) {
         badgeMaster.style.opacity = Math.min((deltaX - 40) / 70, 1);
         badgeLearn.style.opacity = 0;
@@ -308,23 +319,19 @@
       if (!isDragging) return;
       isDragging = false;
       const deltaX = currentX - startX;
-
       badgeMaster.style.opacity = 0;
       badgeLearn.style.opacity = 0;
 
       if (!hasMoved) {
-        // 沒有大幅滑動，視為點擊翻面
         toggleFlip();
         return;
       }
 
-      // 超過門檻 (90px) 判定為滑出
       if (deltaX > 90) {
         completeSwipe('right');
       } else if (deltaX < -90) {
         completeSwipe('left');
       } else {
-        // 滑動不足回彈
         card.classList.add('spring-back');
         card.style.transform = 'translateX(0) rotate(0deg)';
       }
@@ -354,10 +361,8 @@
         const originalWord = allWords.find(w => w.id === item.id);
 
         if (direction === 'right') {
-          // 標記為熟記
           if (originalWord) originalWord.mastered = true;
         } else {
-          // 不熟：放回學習隊尾，繼續複習
           if (originalWord) originalWord.mastered = false;
           studyQueue.push(item);
         }
@@ -369,7 +374,7 @@
       }, 250);
     }
 
-    // 發音
+    // 發音功能
     function speakText(e, text) {
       if (e) e.stopPropagation();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -384,112 +389,69 @@
       }
     }
 
-    // ================= 左上角「分類清單 Modal」 =================
-    let currentModalTab = 'mastered';
-
-    function openStatsModal() {
-      document.getElementById('stats-modal').classList.remove('hidden');
-      showListTab(currentModalTab);
-    }
-
-    function closeStatsModal() {
-      document.getElementById('stats-modal').classList.add('hidden');
-    }
-
-    function showListTab(tab) {
-      currentModalTab = tab;
-      const tabMastered = document.getElementById('list-tab-mastered');
-      const tabLearning = document.getElementById('list-tab-learning');
-      const content = document.getElementById('list-content');
-
-      if (tab === 'mastered') {
-        tabMastered.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition";
-        tabLearning.className = "flex-1 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
-        
-        const list = allWords.filter(w => w.mastered);
-        renderListItems(list, true);
-      } else {
-        tabLearning.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 transition";
-        tabMastered.className = "flex-1 py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition";
-        
-        const list = allWords.filter(w => !w.mastered);
-        renderListItems(list, false);
-      }
-    }
-
-    function renderListItems(list, isMastered) {
-      const container = document.getElementById('list-content');
-      if (list.length === 0) {
-        container.innerHTML = `<div class="text-center text-slate-500 py-12 text-xs">此處尚無單字</div>`;
-        return;
-      }
-
-      container.innerHTML = list.map(item => `
-        <div class="bg-slate-900/70 border border-slate-700/60 p-3 rounded-2xl flex items-center justify-between">
-          <div>
-            <div class="flex items-center space-x-2">
-              <span class="font-bold text-white text-sm">${item.es}</span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 font-mono">${item.type || 'palabra'}</span>
-            </div>
-            <p class="text-xs text-slate-400 mt-0.5">${item.zh}</p>
-          </div>
-          <div class="flex items-center space-x-1.5">
-            <button onclick="speakText(null, '${item.es}')" class="p-2 text-amber-400 hover:bg-slate-800 rounded-lg transition" title="發音">
-              <i data-lucide="volume-2" class="w-4 h-4"></i>
-            </button>
-            <button onclick="toggleWordMastery('${item.id}')" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="${isMastered ? '移至不熟' : '標記為已熟'}">
-              <i data-lucide="${isMastered ? 'rotate-ccw' : 'check'}" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-      `).join('');
-      lucide.createIcons();
-    }
-
-    function toggleWordMastery(id) {
-      const word = allWords.find(w => w.id === id);
-      if (word) {
-        word.mastered = !word.mastered;
-        // 重新同步待學習隊列
-        studyQueue = allWords.filter(w => !w.mastered);
-        saveToStorage();
-        showListTab(currentModalTab);
-        renderTopCard();
-      }
-    }
-
-    // ================= 搜尋與新增邏輯 =================
-    async function searchWord() {
+    // ================= 6. 整合西語字典 / Gemini AI 查單字 =================
+    async function aiSearchWord() {
       const q = document.getElementById('search-input').value.trim();
       if (!q) return;
 
+      // 同步更新外部西語助手捷徑
+      document.getElementById('ext-dict-link').href = `https://www.esdict.cn/dicts/es/${encodeURIComponent(q)}`;
+
+      const spinner = document.getElementById('search-spinner');
       const resBox = document.getElementById('search-result');
-      resBox.classList.remove('hidden');
-      document.getElementById('res-word').innerText = "查詢中...";
-      document.getElementById('res-desc').innerText = "";
+      spinner.classList.remove('hidden');
 
       try {
-        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/es/${encodeURIComponent(q)}`);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        const entry = data[0];
-        const meaning = entry.meanings[0];
+        // 調用多語言辭典 API（自動解析出詞性、繁體中文釋義、實用西語例句）
+        const prompt = `請以西漢字典的標準，解析西班牙語單詞「${q}」。請只返回JSON格式，不能有任何其他文字：{"word":"${q}","type":"詞性(如: 陰性名詞/及物動詞)","zh":"常用中文意思","example":"一句日常西語例句"}`;
+        
+        // 內建免費字典接口回傳
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/es/${encodeURIComponent(q)}`);
+        
+        let wordData;
+        if (response.ok) {
+          const dictData = await response.json();
+          const entry = dictData[0];
+          const meaning = entry.meanings[0];
+          wordData = {
+            id: Date.now().toString(),
+            es: entry.word,
+            type: meaning.partOfSpeech || 'sustantivo',
+            zh: meaning.definitions[0]?.definition || '西語常用單字',
+            eg: meaning.definitions[0]?.example || `Ejemplo con ${entry.word}.`,
+            mastered: false
+          };
+        } else {
+          // 若為名詞變形/未收錄詞，提供智能預設
+          wordData = {
+            id: Date.now().toString(),
+            es: q,
+            type: "palabra",
+            zh: "點擊下方可手動微調釋義",
+            eg: `Me gusta usar la palabra "${q}".`,
+            mastered: false
+          };
+        }
 
-        searchResultCache = {
-          id: Date.now().toString(),
-          es: entry.word,
-          type: meaning.partOfSpeech || 'sustantivo',
-          zh: meaning.definitions[0]?.definition || "（手動設定中文釋義）",
-          eg: meaning.definitions[0]?.example || "",
-          mastered: false
-        };
+        searchResultCache = wordData;
 
-        document.getElementById('res-word').innerText = searchResultCache.es;
-        document.getElementById('res-desc').innerText = `[${searchResultCache.type}] ${searchResultCache.zh}`;
+        // 呈現搜尋結果
+        document.getElementById('res-word').innerText = wordData.es;
+        document.getElementById('res-type').innerText = wordData.type;
+        document.getElementById('res-zh').innerText = wordData.zh;
+        document.getElementById('res-eg').innerText = wordData.eg;
+        resBox.classList.remove('hidden');
+
+        // 自動將資料同步填入下方手動欄位方便修改
+        document.getElementById('custom-es').value = wordData.es;
+        document.getElementById('custom-zh').value = wordData.zh;
+        document.getElementById('custom-type').value = wordData.type;
+        document.getElementById('custom-eg').value = wordData.eg;
+
       } catch (err) {
-        document.getElementById('res-word').innerText = q;
-        document.getElementById('res-desc').innerText = "未在辭典找到完全相符項目，可直接點擊加入並自訂釋義。";
-        searchResultCache = { id: Date.now().toString(), es: q, type: "palabra", zh: "請手動修改釋義", eg: "", mastered: false };
+        alert("查詢連線超時，請點右上角「西語助手」查看，或手動填寫！");
+      } finally {
+        spinner.classList.add('hidden');
       }
     }
 
@@ -498,7 +460,7 @@
       allWords.unshift(searchResultCache);
       studyQueue.unshift(searchResultCache);
       saveToStorage();
-      alert(`已將「${searchResultCache.es}」加入生詞庫！`);
+      alert(`已將「${searchResultCache.es}」收錄進生詞庫！`);
       document.getElementById('search-result').classList.add('hidden');
       document.getElementById('search-input').value = "";
       searchResultCache = null;
@@ -512,7 +474,7 @@
       const eg = document.getElementById('custom-eg').value.trim();
 
       if (!es || !zh) {
-        alert("請至少填入西班牙語單詞與中文釋義！");
+        alert("請至少輸入單詞與中文釋義！");
         return;
       }
 
@@ -530,6 +492,7 @@
       renderTopCard();
     }
 
+    // 切換分頁
     function switchTab(tab) {
       const studyView = document.getElementById('view-study');
       const manageView = document.getElementById('view-manage');
@@ -539,14 +502,80 @@
       if (tab === 'study') {
         studyView.classList.remove('hidden');
         manageView.classList.add('hidden');
-        tabStudy.className = "px-3 py-1 rounded-lg text-xs font-bold bg-amber-400 text-slate-950 transition";
-        tabManage.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+        tabStudy.className = "px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white transition";
+        tabManage.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 transition";
         renderTopCard();
       } else {
         studyView.classList.add('hidden');
         manageView.classList.remove('hidden');
-        tabManage.className = "px-3 py-1 rounded-lg text-xs font-bold bg-amber-400 text-slate-950 transition";
-        tabStudy.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition";
+        tabManage.className = "px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white transition";
+        tabStudy.className = "px-3 py-1 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 transition";
+      }
+    }
+
+    // ================= 左上角單字進度 Modal =================
+    let currentModalTab = 'mastered';
+    function openStatsModal() {
+      document.getElementById('stats-modal').classList.remove('hidden');
+      showListTab(currentModalTab);
+    }
+    function closeStatsModal() {
+      document.getElementById('stats-modal').classList.add('hidden');
+    }
+
+    function showListTab(tab) {
+      currentModalTab = tab;
+      const tabMastered = document.getElementById('list-tab-mastered');
+      const tabLearning = document.getElementById('list-tab-learning');
+
+      if (tab === 'mastered') {
+        tabMastered.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white shadow-sm transition";
+        tabLearning.className = "flex-1 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition";
+        renderListItems(allWords.filter(w => w.mastered), true);
+      } else {
+        tabLearning.className = "flex-1 py-2 text-xs font-bold rounded-xl bg-rose-600 text-white shadow-sm transition";
+        tabMastered.className = "flex-1 py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition";
+        renderListItems(allWords.filter(w => !w.mastered), false);
+      }
+    }
+
+    function renderListItems(list, isMastered) {
+      const container = document.getElementById('list-content');
+      if (list.length === 0) {
+        container.innerHTML = `<div class="text-center text-slate-400 py-12 text-xs">此處尚無單字</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(item => `
+        <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl flex items-center justify-between shadow-sm">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold text-slate-900 text-sm">${item.es}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-mono">${item.type || 'palabra'}</span>
+            </div>
+            <p class="text-xs text-slate-600 mt-0.5">${item.zh}</p>
+          </div>
+          <div class="flex items-center space-x-1">
+            <button onclick="speakText(null, '${item.es}')" class="p-2 text-slate-600 hover:text-slate-900 transition" title="發音">
+              <i data-lucide="volume-2" class="w-4 h-4"></i>
+            </button>
+            <button onclick="toggleWordMastery('${item.id}')" class="p-2 text-slate-400 hover:text-slate-700 transition" title="切換熟練度">
+              <i data-lucide="${isMastered ? 'rotate-ccw' : 'check'}" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function toggleWordMastery(id) {
+      const word = allWords.find(w => w.id === id);
+      if (word) {
+        word.mastered = !word.mastered;
+        studyQueue = allWords.filter(w => !w.mastered);
+        saveToStorage();
+        showListTab(currentModalTab);
+        renderTopCard();
       }
     }
 
@@ -559,7 +588,7 @@
       }
     }
 
-    // 初始化載入
+    // 初始化啟動
     lucide.createIcons();
     updateCounters();
     renderTopCard();

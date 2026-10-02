@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>西語單詞卡 - Tarjetas de Español</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Lucide 圖示 -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .card-anim {
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center p-4">
+
+  <!-- 頂部標題與模式切換 -->
+  <header class="w-full max-w-md flex justify-between items-center py-4 border-b border-slate-800">
+    <div class="flex items-center space-x-2">
+      <i data-lucide="book-open" class="text-amber-400"></i>
+      <h1 class="text-xl font-bold tracking-wide">Tarjetas ES</h1>
+    </div>
+    <div class="flex space-x-2 bg-slate-800 p-1 rounded-xl">
+      <button onclick="switchTab('study')" id="tab-study" class="px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-400 text-slate-950 transition">複習背詞</button>
+      <button onclick="switchTab('manage')" id="tab-manage" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition">新增單字</button>
+    </div>
+  </header>
+
+  <main class="w-full max-w-md mt-6 flex-1 flex flex-col items-center">
+
+    <!-- ================= 模式 1：背單詞卡片區 ================= -->
+    <div id="view-study" class="w-full flex flex-col items-center">
+      <!-- 進度指示 -->
+      <div class="w-full flex justify-between text-xs text-slate-400 mb-3 px-2">
+        <span>今日複習進度</span>
+        <span id="progress-text">0 / 0</span>
+      </div>
+
+      <!-- 卡片主體 -->
+      <div id="flashcard" class="card-anim w-full h-80 bg-slate-800 rounded-3xl p-6 shadow-2xl border border-slate-700 flex flex-col justify-between cursor-pointer relative select-none">
+        
+        <!-- 頂部標籤與發音按鈕 -->
+        <div class="flex justify-between items-center">
+          <span id="card-type" class="text-xs uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-slate-700 text-amber-300">
+            Sustantivo
+          </span>
+          <button onclick="speakCurrent(event)" class="p-2.5 bg-slate-700 hover:bg-slate-600 active:scale-95 rounded-full text-amber-400 transition" title="播放西語發音">
+            <i data-lucide="volume-2" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- 正面 / 西班牙語單詞 -->
+        <div class="text-center my-auto">
+          <h2 id="card-es" class="text-3xl font-extrabold text-white tracking-wide">Cargando...</h2>
+          <p id="card-hint" class="text-xs text-slate-500 mt-2">點擊卡片翻面看釋義</p>
+
+          <!-- 背面 / 釋義與例句（預設隱藏） -->
+          <div id="card-back" class="hidden mt-4">
+            <p id="card-zh" class="text-2xl font-bold text-amber-300"></p>
+            <p id="card-example" class="text-xs text-slate-400 italic mt-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800"></p>
+          </div>
+        </div>
+
+        <div class="text-center text-[10px] text-slate-500">
+          Tip: 點擊看中文釋義，左右按鈕分類
+        </div>
+      </div>
+
+      <!-- 底部滑動/操作按鈕 -->
+      <div class="flex justify-between w-full mt-6 px-4 gap-4">
+        <button onclick="handleSwipe('left')" class="flex-1 py-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 active:scale-95 rounded-2xl font-bold text-sm flex items-center justify-center space-x-1.5 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+          <span>還不熟 (左)</span>
+        </button>
+        <button onclick="handleSwipe('right')" class="flex-1 py-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 active:scale-95 rounded-2xl font-bold text-sm flex items-center justify-center space-x-1.5 transition">
+          <span>記住了 (右)</span>
+          <i data-lucide="check" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+
+    <!-- ================= 模式 2：搜尋與手動新增區 ================= -->
+    <div id="view-manage" class="w-full hidden flex flex-col space-y-6">
+
+      <!-- 線上查詞並加入 -->
+      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
+        <h3 class="text-sm font-semibold text-amber-400 mb-2 flex items-center space-x-1.5">
+          <i data-lucide="search" class="w-4 h-4"></i>
+          <span>線上西語字典快速新增</span>
+        </h3>
+        <div class="flex gap-2">
+          <input type="text" id="search-input" placeholder="輸入西文，如：biblioteca" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+          <button onclick="searchWord()" class="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-xl text-sm transition">
+            查詢
+          </button>
+        </div>
+
+        <!-- 查詢結果展示框 -->
+        <div id="search-result" class="hidden mt-3 p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-xs">
+          <div class="flex justify-between items-start">
+            <div>
+              <p id="res-word" class="font-bold text-white text-base"></p>
+              <p id="res-desc" class="text-slate-400 mt-1"></p>
+            </div>
+            <button onclick="addFromSearch()" class="px-2.5 py-1.5 bg-emerald-500 text-white rounded-lg text-xs font-semibold hover:bg-emerald-600 transition">
+              ＋ 加入卡片
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 手動填寫自訂單詞 -->
+      <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-md">
+        <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center space-x-1.5">
+          <i data-lucide="pen-tool" class="w-4 h-4"></i>
+          <span>手動自訂單詞</span>
+        </h3>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">西班牙語單詞 *</label>
+            <input type="text" id="custom-es" placeholder="例：la flor / cantar" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">中文意思 *</label>
+            <input type="text" id="custom-zh" placeholder="例：花 / 唱歌" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">詞性</label>
+              <input type="text" id="custom-type" placeholder="例：名詞 (f.)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">例句（選填）</label>
+              <input type="text" id="custom-eg" placeholder="例句" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+            </div>
+          </div>
+          <button onclick="addCustomWord()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl text-sm transition mt-2">
+            儲存至我的單字庫
+          </button>
+        </div>
+      </div>
+
+      <!-- 已有單字統計與清空 -->
+      <div class="flex justify-between items-center text-xs text-slate-500 pt-2 px-1">
+        <span id="total-words-count">已累積 0 個單字</span>
+        <button onclick="resetWords()" class="text-rose-400 hover:underline">恢復預設單字</button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // 預設詞庫
+    const DEFAULT_WORDS = [
+      { es: "el café", zh: "咖啡", type: "sustantivo", eg: "Un café con leche, por favor." },
+      { es: "la biblioteca", zh: "圖書館", type: "sustantivo", eg: "Estudio en la biblioteca cada tarde." },
+      { es: "viajar", zh: "旅行", type: "verbo", eg: "Me encanta viajar por el mundo." },
+      { es: "hermoso", zh: "美麗的", type: "adjetivo", eg: "Es una ciudad muy hermosa." }
+    ];
+
+    // 從 localStorage 讀取單字
+    let words = JSON.parse(localStorage.getItem('es_words')) || DEFAULT_WORDS;
+    let currentIndex = 0;
+    let isFlipped = false;
+    let searchResultCache = null;
+
+    // DOM 元素
+    const cardEl = document.getElementById('flashcard');
+    const cardEs = document.getElementById('card-es');
+    const cardZh = document.getElementById('card-zh');
+    const cardType = document.getElementById('card-type');
+    const cardExample = document.getElementById('card-example');
+    const cardBack = document.getElementById('card-back');
+    const cardHint = document.getElementById('card-hint');
+    const progressText = document.getElementById('progress-text');
+
+    function saveWords() {
+      localStorage.setItem('es_words', JSON.stringify(words));
+      updateCount();
+    }
+
+    function updateCount() {
+      document.getElementById('total-words-count').innerText = `已累積 ${words.length} 個單字`;
+    }
+
+    // 渲染卡片
+    function renderCard() {
+      if (words.length === 0) {
+        cardEl.innerHTML = `<div class="text-center my-auto"><p class="text-lg font-bold">單字庫目前是空的！</p><p class="text-xs text-slate-400 mt-2">請點擊上方切換到「新增單字」</p></div>`;
+        progressText.innerText = "0 / 0";
+        return;
+      }
+
+      if (currentIndex >= words.length) {
+        cardEl.innerHTML = `
+          <div class="text-center my-auto">
+            <h3 class="text-2xl font-bold text-amber-400">🎉 ¡Muy bien!</h3>
+            <p class="text-sm text-slate-300 mt-2">今日單詞已全部練習完畢！</p>
+            <button onclick="currentIndex = 0; renderCard();" class="mt-4 px-4 py-2 bg-amber-400 text-slate-900 font-bold rounded-xl text-xs">重新複習一輪</button>
+          </div>
+        `;
+        progressText.innerText = `${words.length} / ${words.length}`;
+        return;
+      }
+
+      const item = words[currentIndex];
+      cardEs.innerText = item.es;
+      cardZh.innerText = item.zh;
+      cardType.innerText = item.type || "Vocabulario";
+      cardExample.innerText = item.eg ? `"${item.eg}"` : "無例句";
+
+      // 重設正反面狀態
+      isFlipped = false;
+      cardBack.classList.add('hidden');
+      cardHint.classList.remove('hidden');
+
+      progressText.innerText = `${currentIndex + 1} / ${words.length}`;
+    }
+
+    // 點擊卡片翻面
+    cardEl.addEventListener('click', (e) => {
+      // 避免點發音按鈕時觸發翻面
+      if (e.target.closest('button')) return;
+      if (currentIndex >= words.length) return;
+
+      isFlipped = !isFlipped;
+      cardBack.classList.toggle('hidden', !isFlipped);
+      cardHint.classList.toggle('hidden', isFlipped);
+    });
+
+    // 左右滑動 / 按鈕邏輯
+    function handleSwipe(direction) {
+      if (currentIndex >= words.length) return;
+
+      const moveX = direction === 'right' ? 320 : -320;
+      cardEl.style.transform = `translateX(${moveX}px) rotate(${moveX / 12}deg)`;
+      cardEl.style.opacity = '0';
+
+      setTimeout(() => {
+        if (direction === 'left') {
+          // 不熟的單詞加回隊列後面重新挑戰
+          words.push(words[currentIndex]);
+        }
+        currentIndex++;
+        cardEl.style.transform = 'none';
+        cardEl.style.opacity = '1';
+        renderCard();
+      }, 250);
+    }
+
+    // 發音功能（Web Speech API）
+    function speakCurrent(e) {
+      if (e) e.stopPropagation();
+      if (currentIndex >= words.length) return;
+
+      const text = words[currentIndex].es;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-ES'; // 設定西班牙文發音
+      utterance.rate = 0.9;     // 稍微放慢一點點便於聽清
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // 線上字典 API 搜尋
+    async function searchWord() {
+      const q = document.getElementById('search-input').value.trim();
+      if (!q) return;
+
+      const resBox = document.getElementById('search-result');
+      resBox.classList.remove('hidden');
+      document.getElementById('res-word').innerText = "搜尋中...";
+      document.getElementById('res-desc').innerText = "";
+
+      try {
+        // 使用公開的 Dictionary API (es)
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/es/${encodeURIComponent(q)}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const entry = data[0];
+        const meaning = entry.meanings[0];
+
+        searchResultCache = {
+          es: entry.word,
+          type: meaning.partOfSpeech || 'Sustantivo',
+          zh: meaning.definitions[0]?.definition || "（未找到中文，可自行填寫）",
+          eg: meaning.definitions[0]?.example || ""
+        };
+
+        document.getElementById('res-word').innerText = searchResultCache.es;
+        document.getElementById('res-desc').innerText = `[${searchResultCache.type}] ${searchResultCache.zh}`;
+      } catch (err) {
+        document.getElementById('res-word').innerText = q;
+        document.getElementById('res-desc').innerText = "線上未找到完整釋義，仍可點擊加入後自行修改。";
+        searchResultCache = { es: q, type: "palabra", zh: "請手動補充釋義", eg: "" };
+      }
+    }
+
+    function addFromSearch() {
+      if (!searchResultCache) return;
+      words.unshift(searchResultCache);
+      saveWords();
+      alert(`已將「${searchResultCache.es}」加入卡片庫！`);
+      document.getElementById('search-result').classList.add('hidden');
+      document.getElementById('search-input').value = "";
+      searchResultCache = null;
+      renderCard();
+    }
+
+    // 手動新增單詞
+    function addCustomWord() {
+      const es = document.getElementById('custom-es').value.trim();
+      const zh = document.getElementById('custom-zh').value.trim();
+      const type = document.getElementById('custom-type').value.trim();
+      const eg = document.getElementById('custom-eg').value.trim();
+
+      if (!es || !zh) {
+        alert("請至少填寫西班牙語單詞與中文意思！");
+        return;
+      }
+
+      words.unshift({ es, zh, type: type || 'palabra', eg });
+      saveWords();
+
+      document.getElementById('custom-es').value = "";
+      document.getElementById('custom-zh').value = "";
+      document.getElementById('custom-type').value = "";
+      document.getElementById('custom-eg').value = "";
+
+      alert("單詞已成功存入！");
+      renderCard();
+    }
+
+    // 標籤頁切換
+    function switchTab(tab) {
+      const studyView = document.getElementById('view-study');
+      const manageView = document.getElementById('view-manage');
+      const tabStudy = document.getElementById('tab-study');
+      const tabManage = document.getElementById('tab-manage');
+
+      if (tab === 'study') {
+        studyView.classList.remove('hidden');
+        manageView.classList.add('hidden');
+        tabStudy.className = "px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-400 text-slate-950 transition";
+        tabManage.className = "px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition";
+        renderCard();
+      } else {
+        studyView.classList.add('hidden');
+        manageView.classList.remove('hidden');
+        tabManage.className = "px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-400 text-slate-950 transition";
+        tabStudy.className = "px-3 py-1.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition";
+        updateCount();
+      }
+    }
+
+    function resetWords() {
+      if (confirm("確定要將詞庫重置回預設單字嗎？")) {
+        words = [...DEFAULT_WORDS];
+        saveWords();
+        currentIndex = 0;
+        renderCard();
+      }
+    }
+
+    // 初始化
+    lucide.createIcons();
+    updateCount();
+    renderCard();
+  </script>
+</body>
+</html>

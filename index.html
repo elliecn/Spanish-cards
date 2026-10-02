@@ -337,14 +337,23 @@
       }
     });
 
-    function toggleFlip() {
+        function toggleFlip() {
       if (studyQueue.length === 0) return;
       const back = document.getElementById('card-back');
       const hint = document.getElementById('card-hint');
       isFlipped = !isFlipped;
       if (back) back.classList.toggle('hidden', !isFlipped);
       if (hint) hint.classList.toggle('hidden', isFlipped);
+
+      // 當翻到背面（isFlipped === true）時，自動朗讀西班牙文例句
+      if (isFlipped) {
+        const currentWord = studyQueue[0];
+        if (currentWord && currentWord.eg && currentWord.eg.trim() !== "") {
+          speakText(null, currentWord.eg);
+        }
+      }
     }
+
 
     function triggerSwipe(dir) {
       if (studyQueue.length === 0) return;

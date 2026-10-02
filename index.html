@@ -615,14 +615,15 @@
         return;
       }
 
-      container.innerHTML = list.map(item => `
+            container.innerHTML = list.map(item => `
         <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl flex items-center justify-between shadow-sm">
-          <div>
+          <!-- 點擊此區塊直接跳轉到單字卡 -->
+          <div onclick="jumpToWord('${item.id}')" class="flex-1 cursor-pointer pr-2 hover:opacity-75 transition">
             <div class="flex items-center space-x-2">
               <span class="font-extrabold text-slate-900 text-sm">${item.es}</span>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-mono">${item.type || 'palabra'}</span>
             </div>
-            <p class="text-xs text-slate-600 mt-0.5">${item.zh}</p>
+            <p class="text-xs text-slate-600 mt-0.5">${item.zh}</p>${item.eg ? `<p class="text-[10px] text-slate-400 mt-1 italic">${item.eg} ${item.egZh ? `(${item.egZh})` : ''}</p>` : ''}
           </div>
           <div class="flex items-center space-x-1">
             <button onclick="speakText(null, '${item.es}')" class="p-2 text-slate-600 hover:text-slate-900 transition" title="發音">
@@ -635,6 +636,21 @@
         </div>
       `).join('');
       lucide.createIcons();
+    }
+    // 點擊清單項目直接載入該單字卡
+    function jumpToWord(id) {
+      const targetIndex = allWords.findIndex(w => w.id === id);
+      if (targetIndex === -1) return;
+
+      const targetWord = allWords[targetIndex];
+
+      // 將該單字排到複習佇列的最前面
+      studyQueue = [targetWord, ...studyQueue.filter(w => w.id !== id)];
+
+      // 關閉清單彈窗並切換回單字卡頁面
+      closeStatsModal();
+      switchTab('study');
+      renderTopCard();
     }
 
     function toggleWordMastery(id) {

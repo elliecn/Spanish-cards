@@ -499,18 +499,20 @@
       renderTopCard();
     }
 
-    function addCustomWord() {
+        function addCustomWord() {
       const es = document.getElementById('custom-es').value.trim();
       const zh = document.getElementById('custom-zh').value.trim();
       const type = document.getElementById('custom-type').value.trim();
       const eg = document.getElementById('custom-eg').value.trim();
+      const egZh = document.getElementById('custom-eg-zh').value.trim(); // 👈 1. 讀取例句中文
 
       if (!es || !zh) {
         alert("請至少輸入單詞與中文釋義！");
         return;
       }
 
-      const newWord = { id: Date.now().toString(), es, zh, type: type || 'palabra', eg, mastered: false };
+      // 2. 存入物件時加上 egZh
+      const newWord = { id: Date.now().toString(), es, zh, type: type || 'palabra', eg, egZh, mastered: false };
       allWords.unshift(newWord);
       studyQueue.unshift(newWord);
       saveToStorage();
@@ -519,10 +521,12 @@
       document.getElementById('custom-zh').value = "";
       document.getElementById('custom-type').value = "";
       document.getElementById('custom-eg').value = "";
+      document.getElementById('custom-eg-zh').value = ""; // 👈 3. 清空輸入框
 
       alert("單詞已成功存入！");
       renderTopCard();
     }
+
 
     function switchTab(tab) {
       const studyView = document.getElementById('view-study');

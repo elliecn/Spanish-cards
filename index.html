@@ -11,11 +11,12 @@
   <style>
     body {
       overscroll-behavior-y: contain;
-      /* 1. 自訂背景圖片：更換下方 url 裡的連結即可 */
-      background-image: url('bg.jpg');
+      /* 背景設定：讀取已上傳的 bg.jpeg */
+      background-image: url('bg.jpeg');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
+      background-color: #0f172a;
     }
     .card-touch {
       touch-action: none;
@@ -34,20 +35,20 @@
 
   <!-- 頂部導航 -->
   <header class="w-full max-w-md flex justify-between items-center py-2 relative z-10">
-    <!-- 左上角按鈕 -->
-    <button onclick="openStatsModal()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-white/80 hover:bg-white active:scale-95 border border-white/40 shadow-sm rounded-xl text-xs font-bold text-slate-800 backdrop-blur transition">
+    <!-- 左上角：進度庫按鈕 -->
+    <button onclick="openStatsModal()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-white/85 hover:bg-white active:scale-95 border border-white/40 shadow-sm rounded-xl text-xs font-bold text-slate-800 backdrop-blur transition">
       <i data-lucide="layers" class="w-4 h-4 text-amber-500"></i>
       <span>單字進度庫</span>
     </button>
 
-    <!-- 右上角切換 -->
-    <div class="flex space-x-1 bg-white/70 backdrop-blur p-1 rounded-xl border border-white/30 shadow-sm">
+    <!-- 右上角：分頁切換 -->
+    <div class="flex space-x-1 bg-white/75 backdrop-blur p-1 rounded-xl border border-white/30 shadow-sm">
       <button onclick="switchTab('study')" id="tab-study" class="px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white transition">複習卡</button>
       <button onclick="switchTab('manage')" id="tab-manage" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 transition">新增單字</button>
     </div>
   </header>
 
-  <!-- 2. 正中間最上方大標題：CN’s español -->
+  <!-- 正中間大標題 -->
   <div class="w-full max-w-md text-center my-3 relative z-10">
     <h1 class="text-3xl font-black tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] font-serif">
       CN’s español
@@ -59,7 +60,7 @@
     <!-- ================= 模式 1：複習卡片區 ================= -->
     <div id="view-study" class="w-full flex flex-col items-center">
       
-      <!-- 進度指示 -->
+      <!-- 統計資訊 -->
       <div class="w-full flex justify-between text-xs text-white/95 font-semibold drop-shadow mb-3 px-2">
         <span id="queue-status">待複習：0</span>
         <span id="mastered-count" class="text-emerald-300">已記熟：0</span>
@@ -68,7 +69,7 @@
       <!-- 卡片外框與容器 -->
       <div class="relative w-full h-[360px] flex items-center justify-center">
 
-        <!-- 滑動指示標籤 -->
+        <!-- 滑動提示文字 -->
         <div id="badge-master" class="absolute top-6 right-6 z-20 px-3 py-1.5 bg-emerald-500 text-white font-black rounded-lg opacity-0 transform rotate-12 transition-opacity pointer-events-none text-xs shadow-lg">
           記住了 ✓
         </div>
@@ -76,17 +77,17 @@
           還不熟 ✕
         </div>
 
-        <!-- 真正可被拖曳滑動的卡片本體（柔和暖白底色，5. 單字改黑色） -->
+        <!-- 真正可被拖曳滑動的卡片本體 -->
         <div id="flashcard" class="card-touch absolute w-full h-full bg-white/95 backdrop-blur-md rounded-3xl p-6 shadow-2xl border border-white/60 flex flex-col justify-between cursor-grab active:cursor-grabbing">
           
-          <!-- 頂部：3. 已刪除左上角 sustantivo，保留右上發音按鈕 -->
+          <!-- 頂部僅保留發音按鈕 -->
           <div class="flex justify-end items-center">
             <button onclick="speakCurrent(event)" class="p-2.5 bg-slate-100 hover:bg-slate-200 active:scale-90 rounded-full text-slate-700 transition" title="播放發音">
               <i data-lucide="volume-2" class="w-5 h-5"></i>
             </button>
           </div>
 
-          <!-- 正反面單字內容（5. 黑色字體） -->
+          <!-- 正反面單字內容（字體黑色粗體） -->
           <div class="text-center my-auto pointer-events-none">
             <h2 id="card-es" class="text-4xl font-extrabold text-slate-900 tracking-wide">載入中...</h2>
             <p id="card-hint" class="text-xs text-slate-400 mt-2 font-medium">輕點卡片翻轉查看釋義</p>
@@ -97,13 +98,13 @@
             </div>
           </div>
 
-          <!-- 4. 底部引導小字（左滑/右滑那行）已依要求刪除 -->
+          <!-- 底部引導小字已刪除，保持卡片乾淨 -->
           <div></div>
         </div>
 
       </div>
 
-      <!-- 底部輔助按鈕 -->
+      <!-- 底部操作按鈕 -->
       <div class="flex justify-between w-full mt-6 px-2 gap-4">
         <button onclick="triggerSwipe('left')" class="flex-1 py-3 bg-rose-500/90 text-white hover:bg-rose-600 active:scale-95 rounded-2xl font-bold text-sm flex items-center justify-center space-x-1.5 shadow-md transition">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -117,17 +118,16 @@
 
     </div>
 
-    <!-- ================= 模式 2：6. 智慧辭典與新增單字 ================= -->
+    <!-- ================= 模式 2：智慧辭典與新增單字 ================= -->
     <div id="view-manage" class="w-full hidden flex flex-col space-y-4">
       
-      <!-- Gemini 智慧搜尋並自動填寫 -->
+      <!-- 智慧辭典搜尋 -->
       <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl border border-white/60 shadow-xl">
         <h3 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
           <span class="flex items-center space-x-1.5">
             <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
-            <span>西語 AI 辭典智慧分析</span>
+            <span>西語辭典智慧分析</span>
           </span>
-          <!-- 串接外部西語助手[span_2](start_span)[span_2](end_span) -->
           <a id="ext-dict-link" href="https://www.esdict.cn" target="_blank" class="text-[11px] text-sky-600 hover:underline flex items-center space-x-0.5">
             <span>西語助手網頁</span>
             <i data-lucide="external-link" class="w-3 h-3"></i>
@@ -142,17 +142,15 @@
           </button>
         </div>
 
-        <!-- 字典查詢結果展示區 -->
+        <!-- 查詢結果展示框 -->
         <div id="search-result" class="hidden mt-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
-          <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center space-x-2">
-                <span id="res-word" class="font-bold text-slate-900 text-base"></span>
-                <span id="res-type" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px]"></span>
-              </div>
-              <p id="res-zh" class="text-slate-700 font-medium mt-1 text-sm"></p>
-              <p id="res-eg" class="text-slate-500 italic mt-1.5 bg-white p-2 rounded-lg border border-slate-200"></p>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span id="res-word" class="font-bold text-slate-900 text-base"></span>
+              <span id="res-type" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold text-[10px]"></span>
             </div>
+            <p id="res-zh" class="text-slate-700 font-medium mt-1 text-sm"></p>
+            <p id="res-eg" class="text-slate-500 italic mt-1.5 bg-white p-2 rounded-lg border border-slate-200"></p>
           </div>
           <button onclick="addFromSearch()" class="mt-3 w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm transition">
             ＋ 將此單字加入我的複習庫
@@ -160,7 +158,7 @@
         </div>
       </div>
 
-      <!-- 手動自訂微調單字 -->
+      <!-- 手動填寫 / 編輯單字 -->
       <div class="bg-white/95 backdrop-blur-md p-5 rounded-3xl border border-white/60 shadow-xl">
         <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-1.5">
           <i data-lucide="pen-tool" class="w-4 h-4 text-slate-600"></i>
@@ -170,14 +168,13 @@
           <input type="text" id="custom-es" placeholder="西班牙語單詞 *" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
           <input type="text" id="custom-zh" placeholder="中文意思 *" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
           <div class="grid grid-cols-2 gap-2">
-            <input type="text" id="custom-type" placeholder="詞性（如：f. 名詞）" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <input type="text" id="custom-type" placeholder="詞性（如：sustantivo (f.)）" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
             <input type="text" id="custom-eg" placeholder="例句" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
           </div>
           <button onclick="addCustomWord()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition">儲存單字</button>
         </div>
       </div>
       
-
     </div>
 
   </main>
@@ -210,7 +207,6 @@
   </div>
 
   <script>
-    // 預設示範詞庫
     const DEFAULT_WORDS = [
       { id: "1", es: "la abuela", zh: "祖母、外婆", type: "sustantivo (f.)", eg: "Mi abuela prepara una comida deliciosa.", mastered: false },
       { id: "2", es: "el café", zh: "咖啡", type: "sustantivo (m.)", eg: "Un café con leche, por favor.", mastered: false },
@@ -218,7 +214,14 @@
       { id: "4", es: "maravilloso", zh: "極好的、精彩的", type: "adjetivo", eg: "Es un día maravilloso.", mastered: false }
     ];
 
-    let allWords = JSON.parse(localStorage.getItem('es_vocab_all')) || DEFAULT_WORDS;
+    let allWords = [];
+    try {
+      allWords = JSON.parse(localStorage.getItem('es_vocab_all')) || DEFAULT_WORDS;
+      if (!Array.isArray(allWords) || allWords.length === 0) allWords = DEFAULT_WORDS;
+    } catch (e) {
+      allWords = DEFAULT_WORDS;
+    }
+
     let studyQueue = allWords.filter(w => !w.mastered);
     let isFlipped = false;
     let searchResultCache = null;
@@ -240,7 +243,6 @@
       document.getElementById('count-learning').innerText = allWords.length - mastered;
     }
 
-    // 渲染卡片
     function renderTopCard() {
       if (studyQueue.length === 0) {
         card.innerHTML = `
@@ -372,18 +374,15 @@
       }, 250);
     }
 
-       // 發音：強制篩選出系統內建的純正西班牙語聲線
+    // 純正西班牙語發音（鎖定 es-ES 語系模型）
     function speakText(e, text) {
       if (e) e.stopPropagation();
-      
-      // 先停止前一個發音，避免重疊
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'es-ES'; // 設定標準西班牙語 (西班牙)
-      utterance.rate = 0.85;    // 語速稍慢更清晰
+      utterance.lang = 'es-ES';
+      utterance.rate = 0.85;
 
-      // 從裝置的所有語音庫中，找出最道地的西語聲線 (例如 iOS 內建的 Jorge, Monica, Paulina 等)
       const voices = window.speechSynthesis.getVoices();
       const spanishVoice = voices.find(v => v.lang === 'es-ES') || 
                            voices.find(v => v.lang.startsWith('es'));
@@ -395,22 +394,13 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // 預加載語音列表（解決 iOS Safari 第一次點擊抓不到語音的問題）
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-      };
-    }
-
-
     function speakCurrent(e) {
       if (studyQueue.length > 0) {
         speakText(e, studyQueue[0].es);
       }
     }
 
-    // ================= 6. 整合西語字典 / Gemini AI 查單字 =================
-        // ================= 穩定開放辭典接口（直接翻譯中文 + 自動詞性例句） =================
+    // 辭典查詢
     async function aiSearchWord() {
       const q = document.getElementById('search-input').value.trim();
       if (!q) {
@@ -418,7 +408,6 @@
         return;
       }
 
-      // 同步更新西語助手外部連結，方便隨時點開對照
       const extLink = document.getElementById('ext-dict-link');
       if (extLink) extLink.href = `https://www.esdict.cn/dicts/es/${encodeURIComponent(q)}`;
 
@@ -427,7 +416,6 @@
       if (spinner) spinner.classList.remove('hidden');
 
       try {
-        // 1. 調用開放穩定的 MyMemory 翻譯接口（西班牙語 -> 繁體/簡體中文）
         const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=es|zh-TW`;
         const res = await fetch(url);
         const data = await res.json();
@@ -437,7 +425,6 @@
           chineseMeaning = data.responseData.translatedText;
         }
 
-        // 2. 智慧辨識西語詞性 (判斷冠詞與詞尾規則)
         let guessedType = "vocabulario";
         const lowerQ = q.toLowerCase();
         if (lowerQ.startsWith("el ") || lowerQ.endsWith("o")) {
@@ -448,59 +435,32 @@
           guessedType = "verbo";
         }
 
-        // 3. 自動組合範例資料
         const wordData = {
           id: Date.now().toString(),
           es: q,
           type: guessedType,
           zh: chineseMeaning,
-          eg: `Me gusta aprender la palabra "${q}".`,
+          eg: `Me gusta la palabra "${q}".`,
           mastered: false
         };
 
         searchResultCache = wordData;
 
-        // 4. 呈現在查詢結果卡片
         document.getElementById('res-word').innerText = wordData.es;
         document.getElementById('res-type').innerText = wordData.type;
         document.getElementById('res-zh').innerText = wordData.zh;
         document.getElementById('res-eg').innerText = wordData.eg;
         resBox.classList.remove('hidden');
 
-        // 5. 自動同步填寫到手動欄位（方便隨時微調）
         document.getElementById('custom-es').value = wordData.es;
         document.getElementById('custom-zh').value = wordData.zh;
         document.getElementById('custom-type').value = wordData.type;
         document.getElementById('custom-eg').value = wordData.eg;
 
       } catch (err) {
-        console.error("查詢失敗：", err);
-        alert("網路連線超時，請檢查網路或點擊右上角「西語助手網頁」直接查詢！");
+        alert("查詢逾時，請點右上角「西語助手」查看，或手動填寫！");
       } finally {
         if (spinner) spinner.classList.add('hidden');
-      }
-    }
-
-
-        searchResultCache = wordData;
-
-        // 呈現搜尋結果
-        document.getElementById('res-word').innerText = wordData.es;
-        document.getElementById('res-type').innerText = wordData.type;
-        document.getElementById('res-zh').innerText = wordData.zh;
-        document.getElementById('res-eg').innerText = wordData.eg;
-        resBox.classList.remove('hidden');
-
-        // 自動將資料同步填入下方手動欄位方便修改
-        document.getElementById('custom-es').value = wordData.es;
-        document.getElementById('custom-zh').value = wordData.zh;
-        document.getElementById('custom-type').value = wordData.type;
-        document.getElementById('custom-eg').value = wordData.eg;
-
-      } catch (err) {
-        alert("查詢連線超時，請點右上角「西語助手」查看，或手動填寫！");
-      } finally {
-        spinner.classList.add('hidden');
       }
     }
 
@@ -541,7 +501,6 @@
       renderTopCard();
     }
 
-    // 切換分頁
     function switchTab(tab) {
       const studyView = document.getElementById('view-study');
       const manageView = document.getElementById('view-manage');
@@ -562,7 +521,6 @@
       }
     }
 
-    // ================= 左上角單字進度 Modal =================
     let currentModalTab = 'mastered';
     function openStatsModal() {
       document.getElementById('stats-modal').classList.remove('hidden');
@@ -625,8 +583,16 @@
         saveToStorage();
         showListTab(currentModalTab);
         renderTopCard();
-      
-    // 初始化啟動
+      }
+    }
+
+    // 預加載發音庫
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+
     lucide.createIcons();
     updateCounters();
     renderTopCard();

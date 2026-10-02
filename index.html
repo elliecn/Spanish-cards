@@ -422,7 +422,7 @@
       }
     }
 
-    // 辭典查詢
+        // 智慧辭典查詢：自動查詢單字釋義 + 自動生成道地西語例句 + 自動翻譯例句中文
     async function aiSearchWord() {
       const q = document.getElementById('search-input').value.trim();
       if (!q) {
@@ -430,6 +430,7 @@
         return;
       }
 
+      // 同步更新西語助手外部連結
       const extLink = document.getElementById('ext-dict-link');
       if (extLink) extLink.href = `https://www.esdict.cn/dicts/es/${encodeURIComponent(q)}`;
 
@@ -438,49 +439,83 @@
       if (spinner) spinner.classList.remove('hidden');
 
       try {
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=es|zh-TW`;
-        const res = await fetch(url);
-        const data = await res.json();
+        // 1. 查詢單字本身中文意思
+        const wordUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=es|zh-TW`;
+        const resWord = await fetch(wordUrl);
+        const dataWord = await resWord.json();
 
         let chineseMeaning = "常用單字";
-        if (data && data.responseData && data.responseData.translatedText) {
-          chineseMeaning = data.responseData.translatedText;
+        if (dataWord && dataWord.responseData && dataWord.responseData.translatedText) {
+          chineseMeaning = dataWord.responseData.translatedText;
         }
 
+        // 2. 判斷詞性與自動組合西語例句
         let guessedType = "vocabulario";
         const lowerQ = q.toLowerCase();
-        if (lowerQ.startsWith("el ") || lowerQ.endsWith("o")) {
+        let egSpanish = "";
+
+        if (lowerQ.endsWith("ar") || lowerQ.endsWith("er") || lowerQ.endsWith("ir")) {
+          guessedType = "verbo";
+          egSpanish = `Quiero aprender a ${q} hoy.`;
+        } else if (lowerQ.startsWith("el ") || lowerQ.endsWith("o")) {
           guessedType = "sustantivo (m.)";
+          egSpanish = `El ${q.replace(/^el\s+/i, '')} es muy importante para mí.`;
         } else if (lowerQ.startsWith("la ") || lowerQ.endsWith("a") || lowerQ.endsWith("ión") || lowerQ.endsWith("dad")) {
           guessedType = "sustantivo (f.)";
-        } else if (lowerQ.endsWith("ar") || lowerQ.endsWith("er") || lowerQ.endsWith("ir")) {
-          guessedType = "verbo";
+          egSpanish = `La ${q.replace(/^la\s+/i, '')} es muy bonita.`;
+        } else {
+          egSpanish = `Siempre recuerdo la palabra "${q}".`;
         }
 
+        // 3. 自動向翻譯 API 請求「例句的中文翻譯」
+        let egChinese = "這是一個非常實用的西語例句。";
+        try {
+          const egUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(egSpanish)}&langpair=es|zh-TW`;
+          const resEg = await fetch(egUrl);
+          const dataEg = await resEg.json();
+          if (dataEg && dataEg.responseData && dataEg.responseData.translatedText) {
+            egChinese = dataEg.responseData.translatedText;
+          }
+        } catch (e) {
+          console.warn("例句翻譯超時，使用預設釋義");
+        }
+
+        // 4. 建立單字資料物件
         const wordData = {
           id: Date.now().toString(),
           es: q,
           type: guessedType,
           zh: chineseMeaning,
-          eg: `Me gusta la palabra "${q}".`,
+          eg: egSpanish,
+          egZh: egChinese,
           mastered: false
         };
 
         searchResultCache = wordData;
 
+        // 5. 呈現在查詢預覽區
         document.getElementById('res-word').innerText = wordData.es;
         document.getElementById('res-type').innerText = wordData.type;
         document.getElementById('res-zh').innerText = wordData.zh;
         document.getElementById('res-eg').innerText = wordData.eg;
+        
+        const resEgZhEl = document.getElementById('res-eg-zh');
+        if (resEgZhEl) resEgZhEl.innerText = wordData.egZh;
+        
         resBox.classList.remove('hidden');
 
+        // 6. 同步自動填入下方手動表單
         document.getElementById('custom-es').value = wordData.es;
         document.getElementById('custom-zh').value = wordData.zh;
         document.getElementById('custom-type').value = wordData.type;
         document.getElementById('custom-eg').value = wordData.eg;
+        
+        const customEgZhEl = document.getElementById('custom-eg-zh');
+        if (customEgZhEl) customEgZhEl.value = wordData.egZh;
 
       } catch (err) {
-        alert("查詢逾時，請點右上角「西語助手」查看，或手動填寫！");
+        console.error(err);
+        alert("辭典連線超時，請點右上角「西語助手」查看，或手動填寫！");
       } finally {
         if (spinner) spinner.classList.add('hidden');
       }
